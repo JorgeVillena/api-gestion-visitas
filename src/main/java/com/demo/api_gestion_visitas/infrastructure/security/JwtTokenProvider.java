@@ -45,11 +45,12 @@ public class JwtTokenProvider {
     public void setAuthentication(String token) {
         Claims claims = Jwts.parser().verifyWith(getSigningKey()).build().parseSignedClaims(token).getPayload();
         String usuario = claims.getSubject();
-        String perfil = Objects.toString(claims.get("perfil"), "");
+        String perfilClaim = Objects.toString(claims.get("perfil"), "");
+        String securityRole = Profile.toSecurityRoleName(perfilClaim);
         var authentication = new UsernamePasswordAuthenticationToken(
                 usuario,
                 null,
-                List.of(new SimpleGrantedAuthority("ROLE_" + perfil))
+                List.of(new SimpleGrantedAuthority("ROLE_" + securityRole))
         );
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }

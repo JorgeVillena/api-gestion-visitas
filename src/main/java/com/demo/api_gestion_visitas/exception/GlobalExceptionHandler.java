@@ -3,6 +3,7 @@ package com.demo.api_gestion_visitas.exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
@@ -34,6 +35,14 @@ public class GlobalExceptionHandler {
             fieldErrors.put(error.getField(), error.getDefaultMessage());
         }
         return ResponseEntity.badRequest().body(buildBody(HttpStatus.BAD_REQUEST, "Validation failed", fieldErrors));
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, Object>> handleDataIntegrity(DataIntegrityViolationException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(buildBody(HttpStatus.CONFLICT,
+                        "Conflicto de datos: usuario duplicado o valor no permitido por restricciones de la base.",
+                        null));
     }
 
     @ExceptionHandler(Exception.class)
