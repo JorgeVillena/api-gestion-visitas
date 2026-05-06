@@ -288,6 +288,14 @@ Orden típico: tener `visitId` válido → subir evidencia → listar.
 
 **GET** `/api/visit-evidences/visit/{visitId}`
 
+`imageUrl` se devuelve como URL accesible de la API (no ruta local de disco), por ejemplo:
+`http://<host>:<puerto>/api/files/evidencias/evidencia_<uuid>.jpg`.
+
+Si no hay imagen, `imageUrl` puede venir `null`.
+
+**GET** `/api/files/evidencias/{fileName}`  
+Sirve la imagen (JPEG) guardada para que cliente móvil/web la renderice directamente.
+
 ---
 
 ## 4. Estados de visita (referencia)
@@ -345,6 +353,7 @@ curl -s "$BASE/visitas" \
 | POST | `/visitas/{id}/registrar-entrada` | JWT; `PEC` (legacy) |
 | POST | `/visit-evidences` | JWT |
 | GET | `/visit-evidences/visit/{visitId}` | JWT |
+| GET | `/files/evidencias/{fileName}` | JWT; descarga/renderiza imagen de evidencia |
 | POST | `/visit-reviews` | JWT; `ESPECIALISTA` |
 | GET | `/visit-reviews/visit/{visitId}` | JWT |
 | GET | `/director/overview` | JWT; `DIRECTOR` |

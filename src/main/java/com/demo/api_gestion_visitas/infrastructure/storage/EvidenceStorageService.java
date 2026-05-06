@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Base64;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -42,6 +43,30 @@ public class EvidenceStorageService {
         } catch (IOException ex) {
             throw new BusinessException("No se pudo guardar la evidencia", HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    public Optional<Path> resolveStoredEvidence(String fileName) {
+        if (fileName == null || fileName.isBlank()) {
+            return Optional.empty();
+        }
+        String sanitized = Paths.get(fileName).getFileName().toString();
+        Path resolved = evidencesDir.resolve(sanitized).normalize();
+        if (!resolved.startsWith(evidencesDir.normalize())) {
+            return Optional.empty();
+        }
+        if (!Files.exists(resolved) || !Files.isRegularFile(resolved)) {
+            return Optional.empty();
+        }
+        return Optional.of(resolved);
+    }
+
+    public String toPublicImageUrl(String storedPath, String publicBaseUrl) {
+        if (storedPath == null || storedPath.isBlank()) {
+            return null;
+        }
+        String base = publicBaseUrl.endsWith("/") ? publicBaseUrl.substring(0, publicBaseUrl.length() - 1) : publicBaseUrl;
+        String fileName = Paths.get(storedPath).getFileName().toString();
+        return base + "/files/evidencias/" + fileName;
     }
 
     private String stripDataUrlPrefix(String input) {
