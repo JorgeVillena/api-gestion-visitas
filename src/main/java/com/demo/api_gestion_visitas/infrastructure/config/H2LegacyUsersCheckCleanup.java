@@ -14,15 +14,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Bases H2 creadas con un enum antiguo (p. ej. ADMIN/COORDINADOR/DIRECTOR) dejan un CHECK en {@code users.perfil}
- * que Hibernate {@code ddl-auto=update} no elimina. Eso rechaza valores actuales del enum ({@code PEC}, {@code ESPECIALISTA}, etc.).
+ * Bases H2 antiguas pueden dejar {@code users.perfil} como ENUM/constraint obsoleto
+ * (p. ej. ADMIN/COORDINADOR/DIRECTOR). Esto bloquea perfiles actuales como PEC/ESPECIALISTA.
  */
 @Configuration
 public class H2LegacyUsersCheckCleanup {
 
     @Bean
     @Order(0)
-    ApplicationRunner dropObsoleteUsersPerfilCheckConstraints(
+    ApplicationRunner migrateLegacyUsersPerfilConstraints(
             DataSource dataSource,
             @Value("${spring.datasource.url:}") String jdbcUrl) {
         return args -> {
@@ -30,6 +30,12 @@ public class H2LegacyUsersCheckCleanup {
                 return;
             }
             try (Connection c = dataSource.getConnection(); Statement st = c.createStatement()) {
+                // 1) Si PERFIL quedó como ENUM, lo pasamos a VARCHAR para remover restricción implícita.
+                if (tableExists(st, "USERS")) {
+                    st.execute("ALTER TABLE \"USERS\" ALTER COLUMN \"PERFIL\" VARCHAR(64)");
+                }
+
+                // 2) Limpia CHECKs heredados que Hibernate no siempre remueve en ddl-auto=update.
                 List<String[]> constraintTable = new ArrayList<>();
                 try (ResultSet rs = st.executeQuery("""
                         SELECT CONSTRAINT_NAME, TABLE_NAME
@@ -49,6 +55,13 @@ public class H2LegacyUsersCheckCleanup {
                 }
             }
         };
+    }
+
+    private static boolean tableExists(Statement st, String tableNameUpper) throws java.sql.SQLException {
+        String sql = "SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'PUBLIC' AND UPPER(TABLE_NAME) = '" + tableNameUpper + "'";
+        try (ResultSet rs = st.executeQuery(sql)) {
+            return rs.next();
+        }
     }
 
     private static String quote(String id) {
