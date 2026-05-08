@@ -367,4 +367,11 @@ La API está preparada para cabeceras CORS amplias. Las apps **nativas** no usan
 
 ---
 
+## 8. Deploy con PostgreSQL en Render
+
+Para publicar la API con persistencia real de datos (PostgreSQL administrado en Render), revisa:
+`docs/DEPLOY_RENDER_POSTGRES.md`.
+
+---
+
 *Generado a partir del código del proyecto `api-gestion-visitas`.*

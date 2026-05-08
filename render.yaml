@@ -4,3 +4,25 @@ services:
     env: docker
     dockerfilePath: ./Dockerfile
     autoDeploy: true
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase:
+          name: api-gestion-visitas-db
+          property: connectionString
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase:
+          name: api-gestion-visitas-db
+          property: user
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase:
+          name: api-gestion-visitas-db
+          property: password
+      - key: SPRING_JPA_HIBERNATE_DDL_AUTO
+        value: update
+
+databases:
+  - name: api-gestion-visitas-db
+    databaseName: api_gestion_visitas
+    user: api_gestion_visitas_user
